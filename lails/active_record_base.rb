@@ -35,6 +35,14 @@ class ActiveRecord::Base
     def before_save
     end
   end
+  
+  # ここで型情報を取得して、全てのキーの値を取得・格納可能にする
+
+  self.define_method :name do |value|
+  end
+
+  self.define_method :name= do |value|
+  end
 end
 
 class ActiveRecord::RecordInvalid < StandardError
