@@ -37,10 +37,16 @@ class ActiveRecord::Base
 
   # ここで型情報を取得して、全てのキーの値を取得・格納可能にする
 
-  self.define_method :name do |value|
+  def respond_to_missing(name, include_all)
+    false # そのメソッドが使えるかどうか
   end
 
-  self.define_method :name= do |value|
+  def method_missing(method_symbol, *args, &block)
+    "aaaaa"
+  end
+
+  def email
+    "aaaa"
   end
 
   # 個別のインスタンスで使うメソッド
@@ -54,7 +60,7 @@ class ActiveRecord::Base
   end
 
   def save
-    @@hooks.select {|item| item[:type] == :before_save }.each  {|item| item[:func].call}
+    @@hooks.select { |item| item[:type] == :before_save }.each { |item| item[:func].call self }
     # ここで保存処理をする
   end
 

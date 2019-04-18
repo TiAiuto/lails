@@ -15,7 +15,8 @@ catch :abort do
   # ここが一つのトランザクションになる
 
   user = User.new
-  user.name = "test"
+  # user.name = "test"
+  # p user.name
   user.save
 
   controller = UsersController.new
