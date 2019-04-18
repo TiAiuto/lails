@@ -11,6 +11,13 @@ require '../../rails_tutorial/sample_app/app/helpers/sessions_helper'
 require '../../rails_tutorial/sample_app/app/controllers/application_controller'
 require '../../rails_tutorial/toy/app/controllers/users_controller'
 
-user = User.new
-user.name = "test"
-user.save
+catch :abort do
+  # ここが一つのトランザクションになる
+
+  user = User.new
+  user.name = "test"
+  user.save
+
+  controller = UsersController.new
+  p controller.new
+end

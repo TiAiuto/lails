@@ -8,20 +8,30 @@ class ActiveRecord::Base
   class << self
     attr_accessor :abstract_class
 
-    def validates(target_symbol, options = {})
+    @@validators = []
 
+    # バリデーション方式を登録しておく
+
+    def validates(target_symbol, options = {})
+      @@validators << { target_symbol: target_symbol, options: options }
     end
 
     def has_secure_password
+      # 何するんだろう？
     end
 
     def find(id)
+      # 検索メソッドを呼び出す
     end
 
     def find_by(options)
+      # 検索メソッドを呼び出す
     end
 
-    def before_save
+    @@hooks = []
+
+    def before_save(&block)
+      @@hooks << { type: :before_save, func: block }
     end
   end
 
@@ -34,12 +44,18 @@ class ActiveRecord::Base
   end
 
   # 個別のインスタンスで使うメソッド
+
+  def initialize(values = {})
+    # ここで値のコピーを行う
+  end
+
   def valid?
 
   end
 
   def save
-
+    @@hooks.select {|item| item[:type] == :before_save }.each  {|item| item[:func].call}
+    # ここで保存処理をする
   end
 
   def save!
