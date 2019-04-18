@@ -13,3 +13,4 @@ require '../../rails_tutorial/toy/app/controllers/users_controller'
 
 user = User.new
 user.name = "test"
+user.save
