@@ -1,10 +1,6 @@
 # ここではControllerのsuperの役割を果たすコードを書く
 
 require 'erb'
-
-# 動的に
-require '../../rails_tutorial/sample_app/app/helpers/application_helper'
-require '../lails/rails'
 require 'yaml'
 
 module ActionController
