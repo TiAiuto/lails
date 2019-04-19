@@ -26,11 +26,7 @@ srv = WEBrick::HTTPServer.new({
 
 srv.mount_proc '/' do |req, res|
   catch :abort do
-    # ここが一つのトランザクションになる
-
-    user = User.new
-    # user.save
-
+    # ここが一つのトランザクションになる？
     controller = UsersController.new
     res.body   = controller._invoke(:new)
   end
