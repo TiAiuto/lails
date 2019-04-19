@@ -2,14 +2,37 @@
 
 require 'erb'
 
-module ActionController
+# 動的に
+require '../../rails_tutorial/sample_app/app/helpers/application_helper'
+require '../lails/rails'
+require 'yaml'
 
+module ActionController
 end
 
 class ActionController::Base
   # ここでメソッドの呼び出しのためのメソッドなどを書く
 
+  # 本当はこれも動的に読み込む
+  include ApplicationHelper
+
   def initialize
+
+  end
+
+  def flash
+    [] # ToDo: 実装
+  end
+
+  def params
+    {} # ToDo: 実装
+  end
+
+  def debug(target)
+    target.to_yaml
+  end
+
+  def render(target_name)
 
   end
 
@@ -19,11 +42,7 @@ class ActionController::Base
     _render_erb
   end
 
-  def _render_erb
-    # puts self.class.name
-
-    # レイアウトファイル読み込んだりする
-
+  def _render_layout
     Dir.chdir "../../rails_tutorial/sample_app/app/views/" do
       erb_body = ""
       File.open("layouts/application.html.erb", "r") do |f|
@@ -34,6 +53,13 @@ class ActionController::Base
       erb = ERB.new(erb_body)
       erb.result(binding)
     end
+  end
+
+  def _render_erb
+    # puts self.class.name
+
+    # レイアウトファイル読み込んだりする
+    _render_layout { "current file" }
   end
 
   class << self
