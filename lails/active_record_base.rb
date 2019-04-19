@@ -42,16 +42,15 @@ class ActiveRecord::Base
   end
 
   def method_missing(method_symbol, *args, &block)
-    "aaaaa"
-  end
 
-  def email
-    "aaaa"
+    puts method_symbol
+    "aaaaa"
   end
 
   # 個別のインスタンスで使うメソッド
 
   def initialize(values = {})
+    # ここでスキーマ定義を取得する
     # ここで値のコピーを行う
   end
 
@@ -60,7 +59,9 @@ class ActiveRecord::Base
   end
 
   def save
-    @@hooks.select { |item| item[:type] == :before_save }.each { |item| item[:func].call self }
+    @@hooks.select { |item| item[:type] == :before_save }.each do |item|
+      self.instance_eval &item[:func]
+    end
     # ここで保存処理をする
   end
 
