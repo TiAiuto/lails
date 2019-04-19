@@ -6,6 +6,8 @@ require '../lails/action_controller_base'
 require '../../rails_tutorial/sample_app/app/models/application_record'
 require '../../rails_tutorial/sample_app/app/models/user'
 
+# 本当はここで入れるんじゃない
+require '../../rails_tutorial/sample_app/app/helpers/application_helper'
 require '../../rails_tutorial/sample_app/app/helpers/sessions_helper'
 
 require '../../rails_tutorial/sample_app/app/controllers/application_controller'

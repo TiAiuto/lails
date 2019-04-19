@@ -19,18 +19,21 @@ class ActionController::Base
     _render_erb
   end
 
-  def yield
-    "kokoni今回の描画内容を入れる"
-  end
-
   def _render_erb
     # puts self.class.name
 
     # レイアウトファイル読み込んだりする
 
-    str = "hoge"
-    erb = ERB.new("value = <%= str %>")
-    erb.result(binding)
+    Dir.chdir "../../rails_tutorial/sample_app/app/views/" do
+      erb_body = ""
+      File.open("layouts/application.html.erb", "r") do |f|
+        erb_body = f.read
+      end
+      puts erb_body
+
+      erb = ERB.new(erb_body)
+      erb.result(binding)
+    end
   end
 
   class << self
