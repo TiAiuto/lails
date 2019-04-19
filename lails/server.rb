@@ -15,10 +15,8 @@ catch :abort do
   # ここが一つのトランザクションになる
 
   user = User.new
-  # user.name = "test"
-  # p user.name
-  user.save
+  # user.save
 
   controller = UsersController.new
-  p controller.new
+  controller._invoke(:new)
 end
