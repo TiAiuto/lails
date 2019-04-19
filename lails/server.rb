@@ -18,5 +18,5 @@ catch :abort do
   # user.save
 
   controller = UsersController.new
-  controller._invoke(:new)
+  puts controller._invoke(:new)
 end
