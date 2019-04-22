@@ -1,3 +1,32 @@
+# もらいもの
+class String
+  def camelize
+    self.split("_").map { |w| w[0] = w[0].upcase; w }.join
+  end
+
+  def underscore
+    self
+      .gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2')
+      .gsub(/([a-z\d])([A-Z])/, '\1_\2')
+      .tr("-", "_")
+      .downcase
+  end
+end
+
+class Object
+  def empty?
+    self == ''
+  end
+
+  def blank?
+    self.nil? || self.empty?
+  end
+
+  def present?
+    !self.blank?
+  end
+end
+
 class EnvConfig
   # とりあえずダミー
   def development?
@@ -15,29 +44,28 @@ class Routes
     else
       parts = path.split("/").reject { |item| item == '' }
     end
-    controller_name = parts[0]
-    controller_name = controller_name[0].upcase + controller_name[1 .. controller_name.size]
+    controller_name = parts[0].camelize
     { name: controller_name + 'Controller', method_name: parts[-1] }
   end
 
   def get(path, options = {})
     _define_path_helper(path, path)
-    Rails.register_route(path, 'get', extract_controller_info(path, options))
+    Rails._register_route(path, 'get', extract_controller_info(path, options))
   end
 
   def root(path, options = {})
     _define_path_helper('root', '/')
-    Rails.register_route('root', 'get', extract_controller_info(path, options.merge(to: path)))
+    Rails._register_route('/', 'get', extract_controller_info(path, options.merge(to: path)))
   end
 
   def post(path, options = {})
     _define_path_helper(path, path)
-    Rails.register_route(path, 'post', extract_controller_info(path, options))
+    Rails._register_route(path, 'post', extract_controller_info(path, options))
   end
 
   def delete(path, options = {})
     _define_path_helper(path, path)
-    Rails.register_route(path, 'delete', extract_controller_info(path, options))
+    Rails._register_route(path, 'delete', extract_controller_info(path, options))
   end
 
   def resources(path, options = {})
@@ -82,10 +110,17 @@ module Rails
       @rails_application
     end
 
-    def register_route(path, method, controller_info)
+    def _register_route(path, method, controller_info)
+      if path[0] != '/'
+        path = '/' + path # ToDo: 仮対応
+      end
       route = { path: path, method: method, controller_info: controller_info }
       puts "route割り当て登録 #{route}"
       @routes << route
+    end
+
+    def _find_route(path, method)
+      @routes.find { |item| item[:path] == path && item[:method].downcase == method.downcase }
     end
   end
 end

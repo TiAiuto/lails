@@ -2,7 +2,7 @@
 
 require 'erb'
 require 'yaml'
-require 'cgi'
+require 'uri'
 
 module ActionController
 end
@@ -50,7 +50,11 @@ class ActionController::Base
   end
 
   def link_to(title, url, options = {})
-    "<A href='#{CGI.escape(url)}'>#{title}</A>"
+    "<A href='#{URI.encode(url)}'>#{title}</A>"
+  end
+
+  def image_tag(url, options = {})
+    "<img>"
   end
 
   def csrf_meta_tags
@@ -75,7 +79,7 @@ class ActionController::Base
     self.send(method_symbol)
     if @render_state == nil
       # 特に指示がなければ、コントローラ・メソッドに対応するViewを探して描画する
-      controller_name  = self.class.name.gsub(/Controller$/, '').downcase
+      controller_name  = self.class.name.gsub(/Controller$/, '').underscore
       method_name      = method_symbol.to_s
       target_filename  = "#{controller_name}/#{method_name}.html.erb"
       current_rendered = _read_and_render_erb(@views_root_path + target_filename)
@@ -105,8 +109,8 @@ class ActionController::Base
     # このブロック内全体で、ディレクトリの起点を変更しておく
     Dir.chdir @views_root_path do
       # レイアウトファイル読み込んだりする
-      _read_and_render_erb "layouts/application.html.erb" do |key_symbol|
-        @provided_values[key_symbol&.to_sym]
+      _read_and_render_erb 'layouts/application.html.erb' do |key_symbol|
+        @provided_values[key_symbol&.to_sym] || '' # ToDO: なければ空白でいいのか
       end
     end
   end
