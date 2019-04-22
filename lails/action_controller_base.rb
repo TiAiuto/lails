@@ -3,6 +3,7 @@
 require 'erb'
 require 'yaml'
 require 'uri'
+require 'securerandom'
 
 module ActionController
 end
@@ -83,10 +84,10 @@ class ActionController::Base
     self.send(method_symbol)
     if @render_state == nil
       # 特に指示がなければ、コントローラ・メソッドに対応するViewを探して描画する
-      controller_name  = self.class.name.gsub(/Controller$/, '').underscore
-      method_name      = method_symbol.to_s
-      target_filename  = "#{controller_name}/#{method_name}.html.erb"
-      current_rendered = _read_and_render_erb(@views_root_path + target_filename)
+      controller_name       = self.class.name.gsub(/Controller$/, '').underscore
+      method_name           = method_symbol.to_s
+      target_filename       = "#{controller_name}/#{method_name}.html.erb"
+      current_rendered      = _read_and_render_erb(@views_root_path + target_filename)
       @provided_values[nil] = current_rendered
       _render_layout_and_yield
     else
@@ -126,6 +127,24 @@ class ActionController::Base
   end
 
   def _render_erb(source)
+    prefix    = "v"
+    regex_do  = /<%=(.*?\bdo\b.*?)%>/
+    regex_end = /<%\s+?end\s+?%>/
+    var_names = []
+    random_value = SecureRandom.hex(16)
+    while (m = source.match regex_do) != nil
+      id       = SecureRandom.hex(16)
+      var_name = prefix + id
+      var_names << var_name
+      source = source[0...(m.begin 0)] + "<% #{var_name} =#{source[(m.begin 1)...(m.end 1)]}%>" + source[(m.end 0)..source.size]
+    end
+    while (m = source.match regex_end) != nil
+      var_name = var_names.pop
+      source   = source[0...(m.begin 0)] + "<% #{random_value} %><%= #{var_name} %>" + source[(m.end 0)..source.size]
+    end
+    source.gsub!(/<% #{random_value} %>/, '<% end %>')
+
+    puts source
     erb = ERB.new(source)
     erb.result(binding)
   end
