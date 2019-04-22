@@ -26,6 +26,7 @@ class ActionController::Base
   def initialize
     @views_root_path = "../../rails_tutorial/sample_app/app/views/" # ToDo: 本当はどっかに書いておく
     @cookies         = Cookies.new # 本当はもらってくる
+    @provided_values = {}
   end
 
   def session
@@ -33,6 +34,7 @@ class ActionController::Base
   end
 
   def provide(name_symbol, content)
+    @provided_values[name_symbol&.to_sym] = content
   end
 
   def cookies
@@ -77,7 +79,8 @@ class ActionController::Base
       method_name      = method_symbol.to_s
       target_filename  = "#{controller_name}/#{method_name}.html.erb"
       current_rendered = _read_and_render_erb(@views_root_path + target_filename)
-      _render_layout_and_yield current_rendered
+      @provided_values[nil] = current_rendered
+      _render_layout_and_yield
     else
       fail "未実装"
     end
@@ -98,12 +101,12 @@ class ActionController::Base
     @render_state = '' # ToDo: その後の処理内容を記録する
   end
 
-  def _render_layout_and_yield(current_rendered)
+  def _render_layout_and_yield
     # このブロック内全体で、ディレクトリの起点を変更しておく
     Dir.chdir @views_root_path do
       # レイアウトファイル読み込んだりする
-      _read_and_render_erb "layouts/application.html.erb" do
-        current_rendered
+      _read_and_render_erb "layouts/application.html.erb" do |key_symbol|
+        @provided_values[key_symbol&.to_sym]
       end
     end
   end
