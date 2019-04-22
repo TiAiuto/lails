@@ -18,6 +18,28 @@ class Cookies < Hash
   end
 end
 
+class FormBuilder
+  def label(name_symbol, options = {}, &block)
+"labellll"
+  end
+
+  def email_field(name_symbol, options = {}, &block)
+"email"
+  end
+
+  def password_field(name_symbol, options = {}, &block)
+"password"
+  end
+
+  def check_box(name_symbol, options = {}, &block)
+"chjeck!!"
+  end
+
+  def submit(name_symbol, options = {}, &block)
+"submit"
+  end
+end
+
 class ActionController::Base
   # ここでメソッドの呼び出しのためのメソッドなどを書く
 
@@ -58,8 +80,8 @@ class ActionController::Base
     "<img>"
   end
 
-  def form_for(target_symbol, options = {}, &block)
-    "form"
+  def form_for(target_symbol, options = {}, &form_block)
+    "<form>" + form_block.call(FormBuilder.new) + "</form>"
   end
 
   def csrf_meta_tags
@@ -127,10 +149,10 @@ class ActionController::Base
   end
 
   def _render_erb(source)
-    prefix    = "v"
-    regex_do  = /<%=(.*?\bdo\b.*?)%>/
-    regex_end = /<%\s+?end\s+?%>/
-    var_names = []
+    prefix       = "v"
+    regex_do     = /<%=(.*?\bdo\b.*?)%>/
+    regex_end    = /<%\s+?end\s+?%>/
+    var_names    = []
     random_value = SecureRandom.hex(16)
     while (m = source.match regex_do) != nil
       id       = SecureRandom.hex(16)
@@ -143,8 +165,6 @@ class ActionController::Base
       source   = source[0...(m.begin 0)] + "<% #{random_value} %><%= #{var_name} %>" + source[(m.end 0)..source.size]
     end
     source.gsub!(/<% #{random_value} %>/, '<% end %>')
-
-    puts source
     erb = ERB.new(source)
     erb.result(binding)
   end
