@@ -22,28 +22,6 @@ class ActionController::Base
   # 本当はこれも動的に読み込む
   include ApplicationHelper
 
-  # このへんは自動生成する
-
-  def root_path
-    ''
-  end
-
-  def help_path
-    ''
-  end
-
-  def login_path
-    ''
-  end
-
-  def about_path
-    ''
-  end
-
-  def contact_path
-    ''
-  end
-
   def initialize
     @views_root_path = "../../rails_tutorial/sample_app/app/views/"
     @cookies = Cookies.new # 本当はもらってくる

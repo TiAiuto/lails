@@ -1,5 +1,3 @@
-# ここでは起動処理を実行する
-
 require '../lails/rails'
 require '../../rails_tutorial/sample_app/app/helpers/application_helper'
 
@@ -15,8 +13,11 @@ require '../../rails_tutorial/sample_app/app/helpers/sessions_helper'
 require '../../rails_tutorial/sample_app/app/controllers/application_controller'
 require '../../rails_tutorial/toy/app/controllers/users_controller'
 
+require '../../rails_tutorial/sample_app/config/routes'
+
 require 'webrick'
 
+include Rails
 
 srv = WEBrick::HTTPServer.new({
                                 DocumentRoot: './',
