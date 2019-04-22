@@ -57,6 +57,10 @@ class ActionController::Base
     "<img>"
   end
 
+  def form_for(target_symbol, options = {}, &block)
+    "form"
+  end
+
   def csrf_meta_tags
     ''
   end
