@@ -76,8 +76,8 @@ class ActionController::Base
       controller_name  = self.class.name.gsub(/Controller$/, '').downcase
       method_name      = method_symbol.to_s
       target_filename  = "#{controller_name}/#{method_name}.html.erb"
-      current_rendered = _read_and_render_layout(@views_root_path + target_filename)
-      _read_and_render_erb current_rendered
+      current_rendered = _read_and_render_erb(@views_root_path + target_filename)
+      _render_layout_and_yield current_rendered
     else
       fail "未実装"
     end
@@ -88,7 +88,7 @@ class ActionController::Base
   def render(target_name)
     @render_state = '' # ToDo: その後の処理内容を記録する
     if target_name.include? "/"
-      _read_and_render_layout(File.dirname(target_name) + "/_" + File.basename(target_name) + ".html.erb")
+      _read_and_render_erb(File.dirname(target_name) + "/_" + File.basename(target_name) + ".html.erb")
     else
       # 同じディレクトリ内なのでファイル名から即参照できる
     end
@@ -98,7 +98,17 @@ class ActionController::Base
     @render_state = '' # ToDo: その後の処理内容を記録する
   end
 
-  def _read_and_render_layout(path, &block)
+  def _render_layout_and_yield(current_rendered)
+    # このブロック内全体で、ディレクトリの起点を変更しておく
+    Dir.chdir @views_root_path do
+      # レイアウトファイル読み込んだりする
+      _read_and_render_erb "layouts/application.html.erb" do
+        current_rendered
+      end
+    end
+  end
+
+  def _read_and_render_erb(path, &block)
     File.open(path, "r") do |f|
       _render_erb(f.read, &block)
     end
@@ -107,16 +117,6 @@ class ActionController::Base
   def _render_erb(source)
     erb = ERB.new(source)
     erb.result(binding)
-  end
-
-  def _read_and_render_erb(current_rendered)
-    # このブロック内全体で、ディレクトリの起点を変更しておく
-    Dir.chdir @views_root_path do
-      # レイアウトファイル読み込んだりする
-      _read_and_render_layout "layouts/application.html.erb" do
-        current_rendered
-      end
-    end
   end
 
   class << self
