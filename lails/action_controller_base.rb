@@ -19,30 +19,37 @@ class Cookies < Hash
 end
 
 class FormBuilder
+  def initialize(controller)
+    @controller = controller
+  end
+
   def label(name_symbol, options = {}, &block)
-"labellll"
+    if block_given?
+      @controller._erbout('<label>')
+      @controller.instance_exec &block
+      @controller._erbout('</label>')
+    end
+    "labellll"
   end
 
   def email_field(name_symbol, options = {}, &block)
-"email"
+    "email"
   end
 
   def password_field(name_symbol, options = {}, &block)
-"password"
+    "password"
   end
 
   def check_box(name_symbol, options = {}, &block)
-"chjeck!!"
+    "chjeck!!"
   end
 
   def submit(name_symbol, options = {}, &block)
-"submit"
+    "submit"
   end
 end
 
 class ActionController::Base
-  # ここでメソッドの呼び出しのためのメソッドなどを書く
-
   # 本当はこれも動的に読み込む
   include ApplicationHelper
 
@@ -78,10 +85,6 @@ class ActionController::Base
 
   def image_tag(url, options = {})
     "<img>"
-  end
-
-  def form_for(target_symbol, options = {}, &form_block)
-    "<form>" + form_block.call(FormBuilder.new) + "</form>"
   end
 
   def csrf_meta_tags
@@ -148,24 +151,21 @@ class ActionController::Base
     end
   end
 
+  def form_for(target_symbol, options = {}, &form_block)
+    _erbout('<form>')
+    self.instance_exec FormBuilder.new(self), &form_block
+    _erbout('</form>')
+  end
+
+  def _erbout(str)
+    @_erbout_proc.call(str)
+  end
+
   def _render_erb(source)
-    prefix       = "v"
-    regex_do     = /<%=(.*?\bdo\b.*?)%>/
-    regex_end    = /<%\s+?end\s+?%>/
-    var_names    = []
-    random_value = SecureRandom.hex(16)
-    while (m = source.match regex_do) != nil
-      id       = SecureRandom.hex(16)
-      var_name = prefix + id
-      var_names << var_name
-      source = source[0...(m.begin 0)] + "<% #{var_name} =#{source[(m.begin 1)...(m.end 1)]}%>" + source[(m.end 0)..source.size]
+    while (m = source.match /<%=(.*?\bdo\b.*?)%>/) != nil
+      source = source[0...(m.begin 0)] + "<%#{source[(m.begin 1)...(m.end 1)]}%>" + source[(m.end 0)..source.size]
     end
-    while (m = source.match regex_end) != nil
-      var_name = var_names.pop
-      source   = source[0...(m.begin 0)] + "<% #{random_value} %><%= #{var_name} %>" + source[(m.end 0)..source.size]
-    end
-    source.gsub!(/<% #{random_value} %>/, '<% end %>')
-    erb = ERB.new(source)
+    erb = ERB.new('<% @_erbout_proc = Proc.new do |it| _erbout += it end  %>' + source)
     erb.result(binding)
   end
 
