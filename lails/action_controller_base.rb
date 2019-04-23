@@ -162,9 +162,7 @@ class ActionController::Base
   end
 
   def _render_erb(source)
-    while (m = source.match /<%=(.*?\bdo\b.*?)%>/) != nil
-      source = source[0...(m.begin 0)] + "<%#{source[(m.begin 1)...(m.end 1)]}%>" + source[(m.end 0)..source.size]
-    end
+    source.gsub!(/<%=(.*?\bdo\b.*?)%>/, "<%\\1%>")
     erb = ERB.new('<% @_erbout_proc = Proc.new do |it| _erbout += it end  %>' + source)
     erb.result(binding)
   end
