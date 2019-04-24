@@ -1,9 +1,6 @@
-# ここではControllerのsuperの役割を果たすコードを書く
-
 require 'erb'
 require 'yaml'
 require 'uri'
-require 'securerandom'
 
 module ActionController
 end

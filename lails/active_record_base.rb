@@ -1,12 +1,11 @@
-# ここではmodelのsuperの役割を果たすコードを書く
-
 module ActiveRecord
-
 end
 
 class ActiveRecord::Base
   class << self
     attr_accessor :abstract_class
+
+    ### バリデーション関連ここから
 
     @@validators = []
 
@@ -16,9 +15,9 @@ class ActiveRecord::Base
       @@validators << { target_symbol: target_symbol, options: options }
     end
 
-    def has_secure_password
-      # 何するんだろう？
-    end
+    ### バリデーション関連ここまで
+
+    ### DB操作関連ここから
 
     def find(id)
       # 検索メソッドを呼び出す
@@ -28,35 +27,38 @@ class ActiveRecord::Base
       # 検索メソッドを呼び出す
     end
 
+    ### DB操作関連ここまで
+
+    ### コールバック関連ここから
+
     @@hooks = []
 
     def before_save(&block)
       @@hooks << { type: :before_save, func: block }
     end
-  end
 
-  # ここで型情報を取得して、全てのキーの値を取得・格納可能にする
+    ### コールバック関連ここまで
 
-  def respond_to_missing(name, include_all)
-    false # そのメソッドが使えるかどうか
-  end
+    ### その他ここから
 
-  def method_missing(method_symbol, *args, &block)
+    def has_secure_password
+      # 何するんだろう？
+    end
 
-    puts method_symbol
-    "aaaaa"
+    ### その他ここまで
   end
 
   # 個別のインスタンスで使うメソッド
 
-  def initialize(values = {})
-    # ここでスキーマ定義を取得する
-    # ここで値のコピーを行う
-  end
+  ### バリデーション関連ここから
 
   def valid?
 
   end
+
+  ### バリデーション関連ここまで
+
+  ### DB操作ここから
 
   def save
     @@hooks.select { |item| item[:type] == :before_save }.each do |item|
@@ -71,7 +73,10 @@ class ActiveRecord::Base
 
   def update_attribute(target_symbol, value)
   end
+
+  ### DB操作ここまで
 end
 
+# 保存に失敗した場合の例外
 class ActiveRecord::RecordInvalid < StandardError
 end

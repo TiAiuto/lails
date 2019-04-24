@@ -46,6 +46,7 @@ compile 'custom.scss'
 
 ### SCSSのコンパイルここまで
 
+# Railsの中で help_path などのヘルパーを定義しているのでincludeしておく
 include Rails
 
 def find_route(path, method)
@@ -65,8 +66,13 @@ srv = WEBrick::HTTPServer.new(
 srv.mount_proc '/' do |req, res|
   catch :abort do
     path  = req.path.gsub(/\.\./, '') # 脆弱性になるので排除する
-    route = find_route(path, req.request_method)
+    method = req.request_method
+    # path, methodを使って、登録済みのルーティングから検索する
+    route = find_route(path, method)
     unless route
+      unless method == "GET"
+        fail "リソースはGET専用"
+      end
       if path.match /^\/assets\//
         if path.match /^\/assets\/css/
           puts 'CSSファイル送信'
