@@ -60,6 +60,7 @@ end
 class ActionController::Base
   # ToDo: 本当はこれも動的に読み込む
   include ApplicationHelper
+  attr_accessor :cookies, :params, :session, :flash
 
   class << self
     ### コールバック登録ここから
@@ -71,27 +72,14 @@ class ActionController::Base
 
   def initialize
     @_views_root_path = "#{APP_ROOT}app/views/" # ToDo: 本当はどっかに書いておく
-    @_cookies         = Cookies.new # ToDo: 本当はリクエストから変換する
+    @cookies          = Cookies.new # ToDo: 本当はリクエストから変換する
+    @session          = {}
+    @params           = {}
+    @flash            = {}
     @_provided_values = {} # provide, yield で参照するためのデータ
   end
 
   ### 各リクエスト・描画で使う値ここから
-
-  def flash
-    [] # ToDo: 実装
-  end
-
-  def params
-    {} # ToDo: 実装
-  end
-
-  def cookies
-    @_cookies
-  end
-
-  def session
-    {}
-  end
 
   def provide(name_symbol, content)
     @_provided_values[name_symbol] = content

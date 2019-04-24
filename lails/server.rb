@@ -63,13 +63,15 @@ srv = WEBrick::HTTPServer.new(
 )
 
 srv.mount_proc '/' do |req, res|
+  # コールバックの中で処理を中止したい場合ここに飛ぶ
+  # ToDo: トランザクションの中止
   catch :abort do
     path   = req.path.gsub(/\.\./, '') # 脆弱性になるので排除する
     method = req.request_method
 
-    # ToDo: :idなど対応できるよう直す
     # path, methodを使って、登録済みのルーティングから検索する
     puts "route検索 #{path} #{method}"
+    # ToDo: :idなど対応できるよう直す
     route = Rails._find_route(path, method)
     if route
       puts "routeヒット #{route}"
