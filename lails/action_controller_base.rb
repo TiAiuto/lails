@@ -92,7 +92,7 @@ class ActionController::Base
   end
 
   def stylesheet_link_tag(path, options = {})
-    ''
+    '<link href="/assets/custom.scss.css" rel="stylesheet">'
   end
 
   def javascript_include_tag(path, options = {})

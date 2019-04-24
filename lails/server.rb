@@ -27,17 +27,23 @@ def find_route(path, method)
   Rails._find_route(path, method)
 end
 
-srv = WEBrick::HTTPServer.new({
-                                DocumentRoot: './',
-                                BindAddress:  '0.0.0.0',
-                                Port:         '8080',
-                              })
+srv = WEBrick::HTTPServer.new(
+  {
+    DocumentRoot: './',
+    BindAddress:  '0.0.0.0',
+    Port:         '8080',
+  }
+)
 
 srv.mount_proc '/' do |req, res|
   catch :abort do
     route = find_route(req.path, req.request_method)
     unless route
-      res.body = "404"
+      if req.path.match /^\/assets\//
+        File.open("tmp/custom.scss.css", "r") do |file|
+          res.body = file.read
+        end
+      end
       next
     end
     puts "routeヒット #{route}"
@@ -48,5 +54,24 @@ srv.mount_proc '/' do |req, res|
     res.body               = controller._invoke(controller_method_name.to_sym)
   end
 end
+
+
+require 'fileutils'
+require 'sassc'
+require 'jquery-rails'
+
+def compile(file)
+  path = '/Users/ayuto.takasaki/ayuto.takasaki/rails_tutorial/sample_app/app/assets/stylesheets'
+  FileUtils.rm_rf('.sass-cache', secure: true)
+  engine = SassC::Engine.new(
+    %Q{@import "#{path}/#{file}"},
+    syntax: :scss, load_paths: ['/Users/ayuto.takasaki/.rbenv/versions/2.5.1/lib/ruby/gems/2.5.0/gems/bootstrap-sass-3.3.7/assets/stylesheets/']
+  )
+  FileUtils.mkdir_p("tmp/#{File.dirname(file)}")
+  File.open("tmp/#{file}.css", 'w') { |f|
+    f.write engine.render
+  }
+end
+compile 'custom.scss'
 
 srv.start

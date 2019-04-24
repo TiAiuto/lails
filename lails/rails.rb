@@ -32,6 +32,10 @@ class EnvConfig
   def development?
     true
   end
+
+  def test?
+    false
+  end
 end
 
 class Routes
@@ -123,4 +127,8 @@ module Rails
       @routes.find { |item| item[:path] == path && item[:method].downcase == method.downcase }
     end
   end
+end
+
+class Rails::Engine
+
 end
