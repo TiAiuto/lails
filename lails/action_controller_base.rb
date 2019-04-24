@@ -1,5 +1,4 @@
 require 'erb'
-require 'yaml'
 require 'uri'
 
 module ActionController

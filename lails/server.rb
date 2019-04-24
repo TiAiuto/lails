@@ -19,6 +19,7 @@ require '../../rails_tutorial/sample_app/app/controllers/sessions_controller'
 require '../../rails_tutorial/sample_app/config/routes'
 
 require 'webrick'
+require 'yaml'
 
 APP_ROOT            = '../../rails_tutorial/sample_app/'
 BOOTSTRAP_SASS_ROOT = '/Users/ayuto.takasaki/.rbenv/versions/2.5.1/lib/ruby/gems/2.5.0/gems/bootstrap-sass-3.3.7/'
@@ -65,39 +66,48 @@ srv = WEBrick::HTTPServer.new(
 
 srv.mount_proc '/' do |req, res|
   catch :abort do
-    path  = req.path.gsub(/\.\./, '') # 脆弱性になるので排除する
+    path   = req.path.gsub(/\.\./, '') # 脆弱性になるので排除する
     method = req.request_method
     # path, methodを使って、登録済みのルーティングから検索する
     route = find_route(path, method)
-    unless route
-      unless method == "GET"
-        fail "リソースはGET専用"
+    if route
+      puts "routeヒット #{route}"
+      # 登録されているルーティングから情報を検索する
+      action = route[:action]
+      # コントローラのクラスを取得する
+      controller = Object.const_get(action[:controller_name].to_sym).new
+      # コントローラ側のメソッドを呼び出し、結果を取得する
+      result = controller._invoke(action[:controller_method_name].to_sym)
+      if result[:type] == :rendered
+        res.body = result[:content]
+      else
+        fail "実行結果の返却方法が未実装"
       end
-      if path.match /^\/assets\//
-        if path.match /^\/assets\/css/
-          puts 'CSSファイル送信'
-          # リクエストされたCSSファイルを返す
-          File.open("compiled/#{path.gsub(/^\/assets\/css/, '')}", "r") do |file|
-            res.body = file.read
-          end
-        else
-          puts 'リソース送信'
-          res.body = File.binread("#{APP_ROOT}app/assets/images#{path.gsub(/^\/assets\/img/, '')}")
-        end
-      end
-      next
-    end
-    puts "routeヒット #{route}"
-    # 登録されているルーティングから情報を検索する
-    action = route[:action]
-    # コントローラのクラスを取得する
-    controller = Object.const_get(action[:controller_name].to_sym).new
-    # コントローラ側のメソッドを呼び出し、結果を取得する
-    result = controller._invoke(action[:controller_method_name].to_sym)
-    if result[:type] == :rendered
-      res.body = result[:content]
     else
-      fail "未実装"
+      # 登録済みのルーティングから見つからない場合に静的リソースのリクエストの可能性を疑う
+      if path.match /^\/assets\//
+        unless method == "GET"
+          fail "リソースはGET専用"
+        end
+        begin
+          if path.match /^\/assets\/css/
+            puts 'CSSファイル送信'
+            # リクエストされたCSSファイルを返す
+            File.open("compiled/#{path.gsub(/^\/assets\/css/, '')}", "r") do |file|
+              res.body = file.read
+            end
+          else
+            puts 'リソース送信'
+            res.body = File.binread("#{APP_ROOT}app/assets/images#{path.gsub(/^\/assets\/img/, '')}")
+          end
+          next
+        rescue Errno::ENOENT, Errno::EACCES # ファイルが存在しない、または権限がない
+          # 404
+        end
+      else
+        # 404
+      end
+      res.status = 404
     end
   end
 end
