@@ -1,4 +1,5 @@
 require '../lails/rails'
+
 require '../../rails_tutorial/sample_app/app/helpers/application_helper'
 
 require '../lails/active_record_base'
@@ -19,6 +20,31 @@ require '../../rails_tutorial/sample_app/config/routes'
 
 require 'webrick'
 
+APP_ROOT = '../../rails_tutorial/sample_app/'
+BOOTSTRAP_SASS_ROOT = '/Users/ayuto.takasaki/.rbenv/versions/2.5.1/lib/ruby/gems/2.5.0/gems/bootstrap-sass-3.3.7/'
+
+### bootstrap-sass を使ってSCSSをコンパイルする
+
+require 'fileutils'
+require 'sassc'
+require 'jquery-rails'
+
+def compile(file)
+  path = APP_ROOT + 'app/assets/stylesheets'
+  FileUtils.rm_rf('.sass-cache', secure: true)
+  engine = SassC::Engine.new(
+    %Q{@import "#{path}/#{file}"},
+    syntax: :scss, load_paths: ["#{BOOTSTRAP_SASS_ROOT}assets/stylesheets/"]
+  )
+  FileUtils.mkdir_p("compiled/#{File.dirname(file)}")
+  File.open("compiled/#{file}.css", 'w') { |f|
+    f.write engine.render
+  }
+end
+compile 'custom.scss'
+
+### SCSSのコンパイルここまで
+
 include Rails
 
 def find_route(path, method)
@@ -35,6 +61,7 @@ srv = WEBrick::HTTPServer.new(
   }
 )
 
+
 srv.mount_proc '/' do |req, res|
   catch :abort do
     path = req.path.gsub(/\.\./, '') # 脆弱性になるので排除する
@@ -42,12 +69,14 @@ srv.mount_proc '/' do |req, res|
     unless route
       if path.match /^\/assets\//
         if path.match /^\/assets\/css/
-          # ToDo: 仮実装
-          File.open("tmp/custom.scss.css", "r") do |file|
+          puts 'CSSファイル送信'
+          # リクエストされたCSSファイルを返す
+          File.open("compiled/#{path.gsub(/^\/assets\/css/, '')}", "r") do |file|
             res.body = file.read
           end
         else
-          res.body = File.binread("../../rails_tutorial/sample_app/app/assets/images#{path.gsub(/^\/assets\/img/, '')}")
+          puts 'リソース送信'
+          res.body = File.binread("#{APP_ROOT}app/assets/images#{path.gsub(/^\/assets\/img/, '')}")
         end
       end
       next
@@ -56,28 +85,11 @@ srv.mount_proc '/' do |req, res|
     controller_info        = route[:controller_info]
     controller_name        = controller_info[:name]
     controller_method_name = controller_info[:method_name]
+    # コントローラのクラスを取得する
     controller             = Object.const_get(controller_name.to_sym).new
+    # コントローラ側のメソッドを呼び出し、描画内容を取得する
     res.body               = controller._invoke(controller_method_name.to_sym)
   end
 end
-
-
-require 'fileutils'
-require 'sassc'
-require 'jquery-rails'
-
-def compile(file)
-  path = '/Users/ayuto.takasaki/ayuto.takasaki/rails_tutorial/sample_app/app/assets/stylesheets'
-  FileUtils.rm_rf('.sass-cache', secure: true)
-  engine = SassC::Engine.new(
-    %Q{@import "#{path}/#{file}"},
-    syntax: :scss, load_paths: ['/Users/ayuto.takasaki/.rbenv/versions/2.5.1/lib/ruby/gems/2.5.0/gems/bootstrap-sass-3.3.7/assets/stylesheets/']
-  )
-  FileUtils.mkdir_p("tmp/#{File.dirname(file)}")
-  File.open("tmp/#{file}.css", 'w') { |f|
-    f.write engine.render
-  }
-end
-compile 'custom.scss'
 
 srv.start
