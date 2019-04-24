@@ -24,28 +24,29 @@ class FormBuilder
   end
 
   def label(name_symbol, options = {}, &block)
+    @controller._erbout(HTMLTagBuilder.build('label', options))
     if block_given?
-      @controller._erbout('<label>')
       @controller.instance_exec &block
-      @controller._erbout('</label>')
+    else
+      @controller._erbout(name_symbol.to_s.capitalize)
     end
-    "labellll"
+    @controller._erbout('</label>')
   end
 
   def email_field(name_symbol, options = {}, &block)
-    "email"
+    @controller._erbout(HTMLTagBuilder.build('input', options.merge({type: 'email'})))
   end
 
   def password_field(name_symbol, options = {}, &block)
-    "password"
+    @controller._erbout(HTMLTagBuilder.build('input', options.merge({type: 'password'})))
   end
 
   def check_box(name_symbol, options = {}, &block)
-    "chjeck!!"
+    @controller._erbout(HTMLTagBuilder.build('input', options.merge({type: 'checkbox'})))
   end
 
-  def submit(name_symbol, options = {}, &block)
-    "submit"
+  def submit(value, options = {}, &block)
+    @controller._erbout(HTMLTagBuilder.build('input', options.merge({type: 'submit', value: value})))
   end
 end
 
