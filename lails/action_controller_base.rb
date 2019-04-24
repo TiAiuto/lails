@@ -62,13 +62,15 @@ module HTMLTagBuilder
 end
 
 class ActionController::Base
-  # 本当はこれも動的に読み込む
+  # ToDo: 本当はこれも動的に読み込む
   include ApplicationHelper
 
   class << self
+    ### コールバック登録ここから
     def before_action(method_symbol, only = [])
 
     end
+    ### コールバック登録ここまで
   end
 
   def initialize
@@ -77,17 +79,7 @@ class ActionController::Base
     @_provided_values = {} # provide, yield で参照するためのデータ
   end
 
-  def session
-    {}
-  end
-
-  def provide(name_symbol, content)
-    @_provided_values[name_symbol&.to_sym] = content
-  end
-
-  def cookies
-    @_cookies
-  end
+  ### 各リクエスト・描画で使う値ここから
 
   def flash
     [] # ToDo: 実装
@@ -96,6 +88,20 @@ class ActionController::Base
   def params
     {} # ToDo: 実装
   end
+
+  def cookies
+    @_cookies
+  end
+
+  def session
+    {}
+  end
+
+  def provide(name_symbol, content)
+    @_provided_values[name_symbol] = content
+  end
+
+  ### 値ここまで
 
   ### HTMLタグ等定義ここから
 
@@ -127,9 +133,13 @@ class ActionController::Base
 
   ### HTMLタグ等定義ここまで
 
+  ### その他メソッドここから
+
   def debug(target)
     target.to_yaml
   end
+
+  ### その他メソッドここまで
 
   def _invoke(method_symbol)
     # メソッド内での処理結果を覚えておくためのへんすう
@@ -138,6 +148,7 @@ class ActionController::Base
     @_render_state = nil
     # 要求されたメソッドを呼び出す
     self.send(method_symbol)
+    # @_render_state にはメソッドの実行結果が入っている
     if @_render_state == nil
       # コントローラ・メソッドに対応するViewを探して描画する
       controller_name     = self.class.name.gsub(/Controller$/, '').underscore
@@ -147,26 +158,35 @@ class ActionController::Base
       provide(nil, current_rendered) # layout内で `yield` が呼ばれたときに返す値を登録する
       # layoutの描画を実行する
       _render_layout_and_yield
+    elsif @_render_state[:type] == :rendered
+      # 既に描画済みなので特に何もしない
+    elsif @_render_state[:type] == :to_redirect
+      # リダイレクトを要求する
     else
       # ToDo: 実装する
       fail "未実装"
     end
   end
 
-  # ToDo: 動いているがこのへんごちゃついているのでリファクタする
+  ### コントローラ側の描画要求・リダイレクト要求ここから
 
   def render(target_name)
-    @_render_state = '' # ToDo: その後の処理内容を記録する
     if target_name.include? "/"
       _read_and_render_erb(File.dirname(target_name) + "/_" + File.basename(target_name) + ".html.erb")
     else
+      # ToDo: 実装
       # 同じディレクトリ内なのでファイル名から即参照できる
+      fail "見実装"
     end
   end
 
   def redirect_to(target)
-    @_render_state = '' # ToDo: その後の処理内容を記録する
+    @_render_state = { type: :to_redirect, target: :target }
   end
+
+  ### 描画要求・リダイレクト要求ここまで
+
+  ### erbの描画関連ここから
 
   # layout の描画を実行する
   # `yield` の実行時に `provide` で登録した値が返るように、ブロックを渡す
@@ -195,9 +215,12 @@ class ActionController::Base
 
   # 個別のerbの描画（変換）を行う
   def _render_erb(source)
-    # <%= %>
+    # `<%= [].each do |item| %><%end %>` のような書き方は本当はerbの規約違反なので直す
+    # <% [].each do |item| %><%end %> は書いてもOK
     source.gsub!(/<%=(.*?\bdo\b.*?)%>/, "<%\\1%>")
     erb = ERB.new('<% @_erbout_proc = Proc.new do |it| _erbout += it end  %>' + source)
     erb.result(binding)
   end
+
+  ### erbの描画ここまで
 end
