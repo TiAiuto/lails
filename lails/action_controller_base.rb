@@ -49,6 +49,17 @@ class FormBuilder
   end
 end
 
+module HTMLTagBuilder
+  def self.build(tag_name, options = {})
+    tag = "<#{tag_name} "
+    options.each do |key, value|
+      tag += "#{key}='#{value}'" # 仮実装
+    end
+    tag += ">"
+    tag
+  end
+end
+
 class ActionController::Base
   # 本当はこれも動的に読み込む
   include ApplicationHelper
@@ -80,11 +91,11 @@ class ActionController::Base
   end
 
   def link_to(title, url, options = {})
-    "<A href='#{URI.encode(url)}'>#{title}</A>"
+    HTMLTagBuilder.build('a', options.merge(href: url)) + title + "</a>"
   end
 
   def image_tag(url, options = {})
-    "<img>"
+    HTMLTagBuilder.build('img', options)
   end
 
   def csrf_meta_tags
