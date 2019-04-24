@@ -20,7 +20,7 @@ require '../../rails_tutorial/sample_app/config/routes'
 
 require 'webrick'
 
-APP_ROOT = '../../rails_tutorial/sample_app/'
+APP_ROOT            = '../../rails_tutorial/sample_app/'
 BOOTSTRAP_SASS_ROOT = '/Users/ayuto.takasaki/.rbenv/versions/2.5.1/lib/ruby/gems/2.5.0/gems/bootstrap-sass-3.3.7/'
 
 ### bootstrap-sass を使ってSCSSをコンパイルする
@@ -41,6 +41,7 @@ def compile(file)
     f.write engine.render
   }
 end
+
 compile 'custom.scss'
 
 ### SCSSのコンパイルここまで
@@ -63,7 +64,7 @@ srv = WEBrick::HTTPServer.new(
 
 srv.mount_proc '/' do |req, res|
   catch :abort do
-    path = req.path.gsub(/\.\./, '') # 脆弱性になるので排除する
+    path  = req.path.gsub(/\.\./, '') # 脆弱性になるので排除する
     route = find_route(path, req.request_method)
     unless route
       if path.match /^\/assets\//
@@ -82,13 +83,11 @@ srv.mount_proc '/' do |req, res|
     end
     puts "routeヒット #{route}"
     # 登録されているルーティングから情報を検索する
-    controller_info        = route[:controller_info]
-    controller_name        = controller_info[:name]
-    controller_method_name = controller_info[:method_name]
+    action = route[:action]
     # コントローラのクラスを取得する
-    controller             = Object.const_get(controller_name.to_sym).new
+    controller = Object.const_get(action.controller_name.to_sym).new
     # コントローラ側のメソッドを呼び出し、描画内容を取得する
-    res.body               = controller._invoke(controller_method_name.to_sym)
+    res.body = controller._invoke(action.controller_method_name.to_sym)
   end
 end
 

@@ -1,9 +1,11 @@
 # もらいもの
 class String
+  # キャメルケースに変換する
   def camelize
     self.split("_").map { |w| w[0] = w[0].upcase; w }.join
   end
 
+  # スネークケースに変換する
   def underscore
     self
       .gsub(/([A-Z]+)([A-Z][a-z])/, '\1_\2')
@@ -130,11 +132,11 @@ module Rails
       @rails_application
     end
 
-    def _register_route(path, method, controller_info)
+    def _register_route(path, method, action)
       if path[0] != '/'
         path = '/' + path # ToDo: 仮対応
       end
-      route = { path: path, method: method, controller_info: controller_info }
+      route = { path: path, method: method, action: action }
       puts "route割り当て登録 #{route}"
       @routes << route
     end
