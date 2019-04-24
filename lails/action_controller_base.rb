@@ -15,12 +15,13 @@ class Cookies < Hash
 end
 
 class FormBuilder
-  def initialize(controller)
-    @controller = controller
+  def initialize(controller, target_name)
+    @controller  = controller
+    @target_name = target_name
   end
 
   def label(name_symbol, options = {}, &block)
-    @controller._erbout(HTMLTagBuilder.build('label', options))
+    @controller._erbout(HTMLTagBuilder.build('label', options.merge({ for: _generate_name(name_symbol) })))
     if block_given?
       @controller.instance_exec &block
     else
@@ -29,16 +30,20 @@ class FormBuilder
     @controller._erbout('</label>')
   end
 
+  def _generate_name(name)
+    "#{@target_name}[#{name}]"
+  end
+
   def email_field(name_symbol, options = {})
-    @controller._erbout(HTMLTagBuilder.build('input', options.merge({ type: 'email' })))
+    @controller._erbout(HTMLTagBuilder.build('input', options.merge({ type: 'email', name: _generate_name(name_symbol), id: _generate_name(name_symbol) })))
   end
 
   def password_field(name_symbol, options = {})
-    @controller._erbout(HTMLTagBuilder.build('input', options.merge({ type: 'password' })))
+    @controller._erbout(HTMLTagBuilder.build('input', options.merge({ type: 'password', name: _generate_name(name_symbol), id: _generate_name(name_symbol) })))
   end
 
   def check_box(name_symbol, options = {})
-    @controller._erbout(HTMLTagBuilder.build('input', options.merge({ type: 'checkbox' })))
+    @controller._erbout(HTMLTagBuilder.build('input', options.merge({ type: 'checkbox', name: _generate_name(name_symbol), id: _generate_name(name_symbol) })))
   end
 
   def submit(value, options = {}, &block)
@@ -50,7 +55,7 @@ module HTMLTagBuilder
   def self.build(tag_name, options = {})
     tag = "<#{tag_name} "
     options.each do |key, value|
-      tag += "#{key}='#{value}'" # 仮実装
+      tag += "#{key}='#{value}' " # 仮実装
     end
     tag += ">"
     tag
@@ -79,14 +84,6 @@ class ActionController::Base
     @_provided_values = {} # provide, yield で参照するためのデータ
   end
 
-  ### 各リクエスト・描画で使う値ここから
-
-  def provide(name_symbol, content)
-    @_provided_values[name_symbol] = content
-  end
-
-  ### 値ここまで
-
   ### HTMLタグ等定義ここから
 
   def link_to(title, url, options = {})
@@ -97,10 +94,14 @@ class ActionController::Base
     HTMLTagBuilder.build('img', options.merge({ src: "/assets/img/#{url}" }))
   end
 
-  def form_for(target_symbol, options = {}, &form_block)
-    _erbout('<form>')
-    self.instance_exec FormBuilder.new(self), &form_block
-    _erbout('</form>')
+  def form_for(target, options = {}, &form_block)
+    if target.instance_of? Symbol
+      _erbout(HTMLTagBuilder.build('form', options.merge(method: :post, action: options[:url])))
+      self.instance_exec FormBuilder.new(self, target.to_s), &form_block
+      _erbout('</form>')
+    else
+      fail "未実装"
+    end
   end
 
   def csrf_meta_tags
@@ -112,7 +113,7 @@ class ActionController::Base
   end
 
   def javascript_include_tag(path, options = {})
-    '' # ToDo: これから定義する（必要なら）
+    '' # チュートリアルの内容ならいらないかも
   end
 
   ### HTMLタグ等定義ここまで
@@ -150,6 +151,10 @@ class ActionController::Base
   end
 
   ### コントローラ側の描画要求・リダイレクト要求ここから
+
+  def provide(name_symbol, content)
+    @_provided_values[name_symbol] = content
+  end
 
   def render(target_name)
     # ToDo: メソッドの実行結果として描画する場合
