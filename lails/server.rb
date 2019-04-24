@@ -85,9 +85,14 @@ srv.mount_proc '/' do |req, res|
     # 登録されているルーティングから情報を検索する
     action = route[:action]
     # コントローラのクラスを取得する
-    controller = Object.const_get(action.controller_name.to_sym).new
-    # コントローラ側のメソッドを呼び出し、描画内容を取得する
-    res.body = controller._invoke(action.controller_method_name.to_sym)
+    controller = Object.const_get(action[:controller_name].to_sym).new
+    # コントローラ側のメソッドを呼び出し、結果を取得する
+    result = controller._invoke(action[:controller_method_name].to_sym)
+    if result[:type] == :rendered
+      res.body = result[:content]
+    else
+      fail "未実装"
+    end
   end
 end
 

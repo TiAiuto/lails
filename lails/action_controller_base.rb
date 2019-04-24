@@ -141,6 +141,8 @@ class ActionController::Base
 
   ### その他メソッドここまで
 
+  # コントローラの処理の実行を請け負う
+  # 実行結果の使い道は呼び出した側に任せる
   def _invoke(method_symbol)
     # メソッド内での処理結果を覚えておくためのへんすう
     # `render` や `redirect_to` が呼びだされたとき、この変数の値が変化する
@@ -157,20 +159,16 @@ class ActionController::Base
       current_rendered    = _read_and_render_erb(@_views_root_path + target_erb_filename)
       provide(nil, current_rendered) # layout内で `yield` が呼ばれたときに返す値を登録する
       # layoutの描画を実行する
-      _render_layout_and_yield
-    elsif @_render_state[:type] == :rendered
-      # 既に描画済みなので特に何もしない
-    elsif @_render_state[:type] == :to_redirect
-      # リダイレクトを要求する
+      { type: :rendered, content: _render_layout_and_yield }
     else
-      # ToDo: 実装する
-      fail "未実装"
+      @_render_state
     end
   end
 
   ### コントローラ側の描画要求・リダイレクト要求ここから
 
   def render(target_name)
+    # ToDo: メソッドの実行結果として描画する場合
     if target_name.include? "/"
       _read_and_render_erb(File.dirname(target_name) + "/_" + File.basename(target_name) + ".html.erb")
     else

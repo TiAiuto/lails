@@ -41,16 +41,6 @@ class EnvConfig
   end
 end
 
-class ControllerAction
-  attr_accessor :controller_name, :controller_method_name
-
-  def initialize(name, method_name)
-    @controller_name        = name
-    @controller_method_name = method_name
-  end
-end
-
-
 class Routes
   # `get 'sessions/new' `, `get '/help', to: 'static_pages#help'`
   # のそれぞれの形式のルーティングから、コントローラ名とメソッド名を抽出する
@@ -63,8 +53,7 @@ class Routes
       else
         path.split("/").reject { |item| item == '' }
       end
-    controller_name = parts[0].camelize
-    ControllerAction.new(controller_name + 'Controller', parts[-1])
+    {controller_name: "#{parts[0].camelize}Controller", controller_method_name: parts[-1]}
   end
 
   # コントローラ名、メソッド名から、`help_path` のようにヘルパーを生成していく
