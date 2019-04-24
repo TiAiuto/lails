@@ -37,11 +37,17 @@ srv = WEBrick::HTTPServer.new(
 
 srv.mount_proc '/' do |req, res|
   catch :abort do
-    route = find_route(req.path, req.request_method)
+    path = req.path.gsub(/\.\./, '') # 脆弱性になるので排除する
+    route = find_route(path, req.request_method)
     unless route
-      if req.path.match /^\/assets\//
-        File.open("tmp/custom.scss.css", "r") do |file|
-          res.body = file.read
+      if path.match /^\/assets\//
+        if path.match /^\/assets\/css/
+          # ToDo: 仮実装
+          File.open("tmp/custom.scss.css", "r") do |file|
+            res.body = file.read
+          end
+        else
+          res.body = File.binread("../../rails_tutorial/sample_app/app/assets/images#{path.gsub(/^\/assets\/img/, '')}")
         end
       end
       next

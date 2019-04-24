@@ -95,7 +95,7 @@ class ActionController::Base
   end
 
   def image_tag(url, options = {})
-    HTMLTagBuilder.build('img', options)
+    HTMLTagBuilder.build('img', options.merge({src: "/assets/img/#{url}"}))
   end
 
   def csrf_meta_tags
@@ -103,7 +103,7 @@ class ActionController::Base
   end
 
   def stylesheet_link_tag(path, options = {})
-    '<link href="/assets/custom.scss.css" rel="stylesheet">'
+    '<link href="/assets/css/custom.scss.css" rel="stylesheet">'
   end
 
   def javascript_include_tag(path, options = {})
