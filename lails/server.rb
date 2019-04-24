@@ -62,6 +62,30 @@ srv = WEBrick::HTTPServer.new(
   }
 )
 
+# webrickのqueryをRailsのparamsの形式に変換する
+def convert_query_to_params(query)
+  params = {}
+  query.each do |raw_key, value|
+    current_obj = params
+    key_names   = raw_key
+                    .split("[").map { |item| item.gsub(/]/, "") }
+    key_names.each.with_index do |key_s, index|
+      key = key_s.to_sym
+      if index == key_names.size - 1
+        # 最後のときは代入する
+        current_obj[key] = value
+      else
+        # それ以外のときは下に潜る
+        unless current_obj[key]
+          current_obj[key] = {}
+        end
+        current_obj = current_obj[key]
+      end
+    end
+  end
+  params
+end
+
 srv.mount_proc '/' do |req, res|
   # コールバックの中で処理を中止したい場合ここに飛ぶ
   # ToDo: トランザクションの中止
@@ -79,6 +103,9 @@ srv.mount_proc '/' do |req, res|
       action = route[:action]
       # コントローラのクラスを取得する
       controller = Object.const_get(action[:controller_name].to_sym).new
+      params     = convert_query_to_params(req.query)
+      puts "パラメータ：#{params}"
+      controller.params = params
       # コントローラ側のメソッドを呼び出し、結果を取得する
       result = controller._invoke(action[:controller_method_name].to_sym)
       if result[:type] == :rendered

@@ -29,6 +29,12 @@ class Object
   end
 end
 
+class Hash
+  def symbolize_keys
+    self.map { |k, v| [k.to_sym, v] }.to_h
+  end
+end
+
 # 勝手に定義したクラス
 class EnvConfig
   # ダミー
@@ -46,14 +52,14 @@ class Routes
   # のそれぞれの形式のルーティングから、コントローラ名とメソッド名を抽出する
   def _extract_controller_action(path, options)
     # ToDo: 名前空間などの実装は対応していない
-    to              = options[:to]
-    parts           =
+    to    = options[:to]
+    parts =
       if to
         to.split("#").reject { |item| item == '' }
       else
         path.split("/").reject { |item| item == '' }
       end
-    {controller_name: "#{parts[0].camelize}Controller", controller_method_name: parts[-1]}
+    { controller_name: "#{parts[0].camelize}Controller", controller_method_name: parts[-1] }
   end
 
   # コントローラ名、メソッド名から、`help_path` のようにヘルパーを生成していく
