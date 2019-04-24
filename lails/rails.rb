@@ -27,8 +27,9 @@ class Object
   end
 end
 
+# 勝手に定義したクラス
 class EnvConfig
-  # とりあえずダミー
+  # ダミー
   def development?
     true
   end
@@ -38,60 +39,75 @@ class EnvConfig
   end
 end
 
+class ControllerAction
+  attr_accessor :controller_name, :controller_method_name
+
+  def initialize(name, method_name)
+    @controller_name        = name
+    @controller_method_name = method_name
+  end
+end
+
+
 class Routes
-  def extract_controller_info(path, options)
-    to = options[:to]
+  # `get 'sessions/new' `, `get '/help', to: 'static_pages#help'`
+  # のそれぞれの形式のルーティングから、コントローラ名とメソッド名を抽出する
+  def _extract_controller_action(path, options)
     # ToDo: 名前空間などの実装は対応していない
-    parts = []
-    if to
-      parts = to.split("#").reject { |item| item == '' }
-    else
-      parts = path.split("/").reject { |item| item == '' }
-    end
+    to              = options[:to]
+    parts           =
+      if to
+        to.split("#").reject { |item| item == '' }
+      else
+        path.split("/").reject { |item| item == '' }
+      end
     controller_name = parts[0].camelize
-    { name: controller_name + 'Controller', method_name: parts[-1] }
+    ControllerAction.new(controller_name + 'Controller', parts[-1])
   end
 
-  def get(path, options = {})
-    _define_path_helper(path, path)
-    Rails._register_route(path, 'get', extract_controller_info(path, options))
-  end
-
-  def root(path, options = {})
-    _define_path_helper('root', '/')
-    Rails._register_route('/', 'get', extract_controller_info(path, options.merge(to: path)))
-  end
-
-  def post(path, options = {})
-    _define_path_helper(path, path)
-    Rails._register_route(path, 'post', extract_controller_info(path, options))
-  end
-
-  def delete(path, options = {})
-    _define_path_helper(path, path)
-    Rails._register_route(path, 'delete', extract_controller_info(path, options))
-  end
-
-  def resources(path, options = {})
-    _define_path_helper(path, path)
-  end
-
+  # コントローラ名、メソッド名から、`help_path` のようにヘルパーを生成していく
   def _define_path_helper(path, url)
+    # 本当にこの実装でいいのかはわからない
+    # ToDo: 正しく変換されないページがあったら直す
     method_name = (path.to_s).split("/").reject { |item| item == "" }.join("_") + "_path"
     puts "#{method_name} 自動登録"
-    # 本当にこの実装でいいのか調べる
     Rails.define_method method_name.to_s do
       url
     end
   end
 
-  # ここで登録処理をする
+  def get(path, options = {})
+    _define_path_helper(path, path)
+    Rails._register_route(path, 'get', _extract_controller_action(path, options))
+  end
+
+  def root(path, options = {})
+    _define_path_helper('root', '/')
+    Rails._register_route('/', 'get', _extract_controller_action(path, options.merge(to: path)))
+  end
+
+  def post(path, options = {})
+    _define_path_helper(path, path)
+    Rails._register_route(path, 'post', _extract_controller_action(path, options))
+  end
+
+  def delete(path, options = {})
+    _define_path_helper(path, path)
+    Rails._register_route(path, 'delete', _extract_controller_action(path, options))
+  end
+
+  def resources(path, options = {})
+    # ToDo: 実装
+    _define_path_helper(path, path)
+  end
+
+  # ここで登録処理をする（ `routes.rb` を読み込んだら自動で登録される）
   def draw(&block)
     self.instance_eval &block
   end
 end
 
-# ここもダミー
+# ダミー
 class RailsApplication
   attr_reader :routes
 
@@ -129,6 +145,6 @@ module Rails
   end
 end
 
+# bootstrap-sass でこれがないとエラーになる
 class Rails::Engine
-
 end

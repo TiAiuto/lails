@@ -61,7 +61,6 @@ srv = WEBrick::HTTPServer.new(
   }
 )
 
-
 srv.mount_proc '/' do |req, res|
   catch :abort do
     path = req.path.gsub(/\.\./, '') # 脆弱性になるので排除する
@@ -82,6 +81,7 @@ srv.mount_proc '/' do |req, res|
       next
     end
     puts "routeヒット #{route}"
+    # 登録されているルーティングから情報を検索する
     controller_info        = route[:controller_info]
     controller_name        = controller_info[:name]
     controller_method_name = controller_info[:method_name]
