@@ -30,15 +30,15 @@ class FormBuilder
     @controller._erbout('</label>')
   end
 
-  def email_field(name_symbol, options = {}, &block)
+  def email_field(name_symbol, options = {})
     @controller._erbout(HTMLTagBuilder.build('input', options.merge({ type: 'email' })))
   end
 
-  def password_field(name_symbol, options = {}, &block)
+  def password_field(name_symbol, options = {})
     @controller._erbout(HTMLTagBuilder.build('input', options.merge({ type: 'password' })))
   end
 
-  def check_box(name_symbol, options = {}, &block)
+  def check_box(name_symbol, options = {})
     @controller._erbout(HTMLTagBuilder.build('input', options.merge({ type: 'checkbox' })))
   end
 
@@ -133,7 +133,7 @@ class ActionController::Base
   ### その他メソッドここから
 
   def debug(target)
-    target.to_yaml
+    "<pre class='debug_dump'>#{target.to_yaml}</pre>"
   end
 
   ### その他メソッドここまで
