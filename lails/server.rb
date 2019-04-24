@@ -21,8 +21,12 @@ require '../../rails_tutorial/sample_app/config/routes'
 require 'webrick'
 require 'yaml'
 
-APP_ROOT            = '../../rails_tutorial/sample_app/'
+# Railsプロジェクトのルート
+APP_ROOT = '../../rails_tutorial/sample_app/'
+# bootstrap.scssなどがあるフォルダ
 BOOTSTRAP_SASS_ROOT = '/Users/ayuto.takasaki/.rbenv/versions/2.5.1/lib/ruby/gems/2.5.0/gems/bootstrap-sass-3.3.7/'
+# アプリケーション固有のSCSSのファイル名（アセットパイプラインの処理は再現しないため、 `application.css` は無視する）
+SCSS_FILENAME = 'custom.scss'
 
 ### bootstrap-sass を使ってSCSSをコンパイルする
 
@@ -43,18 +47,12 @@ def compile(file)
   }
 end
 
-compile 'custom.scss'
+compile SCSS_FILENAME
 
 ### SCSSのコンパイルここまで
 
 # Railsの中で help_path などのヘルパーを定義しているのでincludeしておく
 include Rails
-
-def find_route(path, method)
-  # ToDo: :idなど対応できるよう直す
-  puts "route検索 #{path} #{method}"
-  Rails._find_route(path, method)
-end
 
 srv = WEBrick::HTTPServer.new(
   {
@@ -68,8 +66,11 @@ srv.mount_proc '/' do |req, res|
   catch :abort do
     path   = req.path.gsub(/\.\./, '') # 脆弱性になるので排除する
     method = req.request_method
+
+    # ToDo: :idなど対応できるよう直す
     # path, methodを使って、登録済みのルーティングから検索する
-    route = find_route(path, method)
+    puts "route検索 #{path} #{method}"
+    route = Rails._find_route(path, method)
     if route
       puts "routeヒット #{route}"
       # 登録されているルーティングから情報を検索する
@@ -107,6 +108,7 @@ srv.mount_proc '/' do |req, res|
       else
         # 404
       end
+      puts '404'
       res.status = 404
     end
   end
