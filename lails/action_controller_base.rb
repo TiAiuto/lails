@@ -26,6 +26,7 @@ class FormBuilder
       @controller._erbout(HTMLTagBuilder.build('label', options.merge({ for: _generate_name(name_symbol) })))
       @controller.instance_exec &block
       @controller._erbout('</label>')
+      ''
     else
       (HTMLTagBuilder.build 'label', options) + name_symbol.to_s.capitalize + "</label>"
     end
