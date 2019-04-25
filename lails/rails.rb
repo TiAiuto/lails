@@ -13,6 +13,10 @@ class String
       .tr("-", "_")
       .downcase
   end
+
+  def pluralize
+    self + "s" # 仮実装
+  end
 end
 
 class Object

@@ -34,6 +34,10 @@ class FormBuilder
     "#{@target_name}[#{name}]"
   end
 
+  def text_field(name_symbol, options = {})
+    @controller._erbout(HTMLTagBuilder.build('input', options.merge({ type: 'text', name: _generate_name(name_symbol), id: _generate_name(name_symbol) })))
+  end
+
   def email_field(name_symbol, options = {})
     @controller._erbout(HTMLTagBuilder.build('input', options.merge({ type: 'email', name: _generate_name(name_symbol), id: _generate_name(name_symbol) })))
   end
@@ -129,13 +133,14 @@ class ActionController::Base
   end
 
   def form_for(target, options = {}, &form_block)
-    if target.instance_of? Symbol
-      _erbout(HTMLTagBuilder.build('form', options.merge(method: :post, action: options[:url])))
-      self.instance_exec FormBuilder.new(self, target.to_s), &form_block
-      _erbout('</form>')
-    else
-      fail "未実装"
+    if target.instance_of? ActiveRecord::Base
+      # ToDo: targetがidを持っていたらpatch、持っていなかったらpostにする
+      options[:method] = 'post'
+      options[:url]    = target.class.downcase.pluralize
     end
+    _erbout(HTMLTagBuilder.build('form', options.merge(method: :post, action: options[:url])))
+    self.instance_exec FormBuilder.new(self, target.to_s.downcase), &form_block
+    _erbout('</form>')
   end
 
   def csrf_meta_tags
@@ -195,10 +200,10 @@ class ActionController::Base
     @_provided_values[name_symbol] = content
   end
 
-  def render(target_name)
+  def render(target_name, options = {})
     if target_name.include? "/"
-      ＃本当にこれでいいのか？
-      _read_and_render_erb(File.dirname(target_name) + "/_" + File.basename(target_name) + ".html.erb")
+      # 本当にこれでいいのか？
+      _read_and_render_erb("#{@_views_root_path}#{File.dirname(target_name)}/_#{File.basename(target_name)}.html.erb")
     else
       # conteroller内でrenderが呼ばれた場合
       # 同じディレクトリ内なのでファイル名から即参照できる
@@ -225,18 +230,16 @@ class ActionController::Base
   # `yield` の実行時に `provide` で登録した値が返るように、ブロックを渡す
   def _render_layout_and_yield
     # このブロック内全体で、ディレクトリの起点を `views` に変更しておく
-    Dir.chdir @_views_root_path do
-      # layout の読み込みを実行する
-      _read_and_render_erb 'layouts/application.html.erb' do |key_symbol|
-        @_provided_values[key_symbol&.to_sym] || ''
-      end
-    end
+    # layout の読み込みを実行する
+    _read_and_render_erb "#{@_views_root_path}layouts/application.html.erb"
   end
 
   # 指定したファイル名のerbファイルを読み込み、描画結果を返す
-  def _read_and_render_erb(path, &block)
+  def _read_and_render_erb(path)
     File.open(path, "r") do |f|
-      _render_erb(f.read, &block)
+      _render_erb(f.read) do |key_symbol|
+        @_provided_values[key_symbol&.to_sym] || ''
+      end
     end
   end
 

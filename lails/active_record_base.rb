@@ -60,6 +60,10 @@ class ActiveRecord::Base
 
   end
 
+  def errors
+    []
+  end
+
   ### バリデーション関連ここまで
 
   ### DB操作ここから
