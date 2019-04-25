@@ -21,13 +21,14 @@ class FormBuilder
   end
 
   def label(name_symbol, options = {}, &block)
-    @controller._erbout(HTMLTagBuilder.build('label', options.merge({ for: _generate_name(name_symbol) })))
     if block_given?
+      # ブロックの内部で描画を行う場合は先にlabelを出力してからブロックを実行する
+      @controller._erbout(HTMLTagBuilder.build('label', options.merge({ for: _generate_name(name_symbol) })))
       @controller.instance_exec &block
+      @controller._erbout('</label>')
     else
-      @controller._erbout(name_symbol.to_s.capitalize)
+      (HTMLTagBuilder.build 'label', options) + name_symbol.to_s.capitalize + "</label>"
     end
-    @controller._erbout('</label>')
   end
 
   def _generate_name(name)
