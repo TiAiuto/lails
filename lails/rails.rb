@@ -72,9 +72,7 @@ class Routes
     # ToDo: 正しく変換されないページがあったら直す
     method_name = (path.to_s).split("/").reject { |item| item == "" }.join("_") + "_path"
     puts "#{method_name} 自動登録"
-    Rails.define_method method_name.to_s do
-      url
-    end
+    Rails._register_path_helper method_name.to_s, url
   end
 
   def get(path, options = {})
@@ -142,6 +140,12 @@ module Rails
 
     def _find_route(path, method)
       @routes.find { |item| item[:path] == path && item[:method].downcase == method.downcase }
+    end
+
+    def _register_path_helper(name, url)
+      define_method name do
+        url
+      end
     end
   end
 end
