@@ -20,6 +20,7 @@ require '../rails_tutorial/sample_app/config/routes'
 
 require 'webrick'
 require 'yaml'
+require 'securerandom'
 
 require '../lails/config'
 
@@ -64,6 +65,10 @@ srv.mount_proc '/' do |req, res|
   catch :abort do
     path   = req.path.gsub(/\.\./, '') # 脆弱性になるので排除する
     method = req.request_method
+
+    # sessionを準備する
+    puts "cookies #{req.cookies}"
+    res.cookies << WEBrick::Cookie.new('_session', SecureRandom.hex(16))
 
     # path, methodを使って、登録済みのルーティングから検索する
     puts "route検索 #{path} #{method}"

@@ -62,14 +62,31 @@ module HTMLTagBuilder
   end
 end
 
-class Flash < Hash
+class Flash
+  def initialize
+    @values_to_save = [] # 描画等の実行後Sessionに保存する
+    @values_saved   = [] # 前回から引き継いだもの
+  end
+
   def now
     # .nowが呼ばれた場合は専用のオブジェクトを返す
     # なければ作る
     unless @_now_hash
-      @_now_hash = {}
+      @_now_hash = {} # ここは今回しか表示しないので保存されない
     end
     @_now_hash
+  end
+
+  def []=(key, val)
+    @values_to_save << [key, val]
+  end
+
+  def [](key)
+    @values_to_save.find { |item| item[0] == key } & [1]
+  end
+
+  def each(&block)
+    (@values_saved + @values_to_save + @_now_hash.to_a).to_h.each &block
   end
 end
 
@@ -97,8 +114,12 @@ class ActionController::Base
 
   ### HTMLタグ等定義ここから
 
+  def content_tag(tag_name, content, options = {})
+    (HTMLTagBuilder.build tag_name, options) + content + "</#{tag_name}>"
+  end
+
   def link_to(title, url, options = {})
-    HTMLTagBuilder.build('a', options.merge(href: url)) + title + "</a>"
+    content_tag('a', title, options.merge(href: url))
   end
 
   def image_tag(url, options = {})
@@ -132,7 +153,7 @@ class ActionController::Base
   ### その他メソッドここから
 
   def debug(target)
-    "<pre class='debug_dump'>#{target.to_yaml}</pre>"
+    content_tag 'pre', target.to_yaml, class: 'debug_dump'
   end
 
   ### その他メソッドここまで
