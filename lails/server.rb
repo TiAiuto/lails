@@ -1,28 +1,28 @@
 require '../lails/rails'
 
-require '../../rails_tutorial/sample_app/app/helpers/application_helper'
+require '../rails_tutorial/sample_app/app/helpers/application_helper'
 
 require '../lails/active_record_base'
 require '../lails/action_controller_base'
 
-require '../../rails_tutorial/sample_app/app/models/application_record'
-require '../../rails_tutorial/sample_app/app/models/user'
+require '../rails_tutorial/sample_app/app/models/application_record'
+require '../rails_tutorial/sample_app/app/models/user'
 
 # 本当はここで入れるんじゃない
-require '../../rails_tutorial/sample_app/app/helpers/sessions_helper'
+require '../rails_tutorial/sample_app/app/helpers/sessions_helper'
 
-require '../../rails_tutorial/sample_app/app/controllers/application_controller'
-require '../../rails_tutorial/sample_app/app/controllers/users_controller'
-require '../../rails_tutorial/sample_app/app/controllers/static_pages_controller'
-require '../../rails_tutorial/sample_app/app/controllers/sessions_controller'
+require '../rails_tutorial/sample_app/app/controllers/application_controller'
+require '../rails_tutorial/sample_app/app/controllers/users_controller'
+require '../rails_tutorial/sample_app/app/controllers/static_pages_controller'
+require '../rails_tutorial/sample_app/app/controllers/sessions_controller'
 
-require '../../rails_tutorial/sample_app/config/routes'
+require '../rails_tutorial/sample_app/config/routes'
 
 require 'webrick'
 require 'yaml'
 
 # Railsプロジェクトのルート
-APP_ROOT = '../../rails_tutorial/sample_app/'
+APP_ROOT = '../rails_tutorial/sample_app/'
 # bootstrap.scssなどがあるフォルダ
 BOOTSTRAP_SASS_ROOT = '/Users/ayuto.takasaki/.rbenv/versions/2.5.1/lib/ruby/gems/2.5.0/gems/bootstrap-sass-3.3.7/'
 # アプリケーション固有のSCSSのファイル名（アセットパイプラインの処理は再現しないため、 `application.css` は無視する）
