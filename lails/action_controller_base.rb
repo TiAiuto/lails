@@ -28,9 +28,6 @@ class FormBuilder
       @controller._erbout(name_symbol.to_s.capitalize)
     end
     @controller._erbout('</label>')
-
-    # @controller._erbout('</label>')
-    # name_symbol.to_s.capitalize # blockでない場
   end
 
   def _generate_name(name)
