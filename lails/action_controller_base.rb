@@ -62,6 +62,17 @@ module HTMLTagBuilder
   end
 end
 
+class Flash < Hash
+  def now
+    # .nowが呼ばれた場合は専用のオブジェクトを返す
+    # なければ作る
+    unless @_now_hash
+      @_now_hash = {}
+    end
+    @_now_hash
+  end
+end
+
 class ActionController::Base
   # ToDo: 本当はこれも動的に読み込む
   include ApplicationHelper
@@ -80,7 +91,7 @@ class ActionController::Base
     @cookies          = Cookies.new # ToDo: 本当はリクエストから変換する
     @session          = {}
     @params           = {}
-    @flash            = {}
+    @flash            = Flash.new
     @_provided_values = {} # provide, yield で参照するためのデータ
   end
 
