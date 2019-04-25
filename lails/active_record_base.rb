@@ -39,13 +39,13 @@ class ActiveRecord::Base
 
     ### コールバック関連ここまで
 
-    ### その他ここから
+    ### 認証関連ここから
 
     def has_secure_password
       # 何するんだろう？
     end
 
-    ### その他ここまで
+    ### 認証関連ここまで
   end
 
   # 個別のインスタンスで使うメソッド
@@ -79,6 +79,14 @@ class ActiveRecord::Base
   end
 
   ### DB操作ここまで
+
+  ### 認証関連ここから
+
+  def authenticate(password)
+
+  end
+
+  ### 認証関連ここまで
 end
 
 # 保存に失敗した場合の例外
