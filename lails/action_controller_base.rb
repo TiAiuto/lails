@@ -63,6 +63,8 @@ module HTMLTagBuilder
 end
 
 class Flash
+  include Enumerable
+
   def initialize
     @values_to_save = [] # 描画等の実行後Sessionに保存する
     @values_saved   = [] # 前回から引き継いだもの
