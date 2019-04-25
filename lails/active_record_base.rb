@@ -50,6 +50,10 @@ class ActiveRecord::Base
 
   # 個別のインスタンスで使うメソッド
 
+  def initialize(params = {})
+
+  end
+
   ### バリデーション関連ここから
 
   def valid?

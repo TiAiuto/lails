@@ -80,9 +80,10 @@ srv.mount_proc '/' do |req, res|
       controller.params = params
       # コントローラ側のメソッドを呼び出し、結果を取得する
       result = controller._invoke(action[:controller_method_name].to_sym)
-      if result[:type] == :rendered
+      case result[:type]
+      when :to_render
         res.body = result[:content]
-      elsif result[:type] == :to_redirect
+      when :to_redirect
         res['Pragma'] = 'no-cache' #キャッシュ防止
         res.set_redirect(HTTPStatus::MovedPermanently, result[:target]) # たぶん合ってる
       else

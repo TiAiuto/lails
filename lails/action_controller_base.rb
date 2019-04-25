@@ -143,21 +143,26 @@ class ActionController::Base
     # メソッド内での処理結果を覚えておくためのへんすう
     # `render` や `redirect_to` が呼びだされたとき、この変数の値が変化する
     # `nil` のままの場合、特に何も呼び出されていない
-    @_render_state = nil
+    @_method_result = nil
+    # viewファイルの探索の基準となるフォルダ
+    controller_name    = self.class.name.gsub(/Controller$/, '').underscore
+    @_current_base_dir = "#{controller_name}/" # なおさなかんよかん
     # 要求されたメソッドを呼び出す
     self.send(method_symbol)
-    # @_render_state にはメソッドの実行結果が入っている
-    if @_render_state == nil
+    if @_method_result == nil
+      method_name = method_symbol.to_s
       # コントローラ・メソッドに対応するViewを探して描画する
-      controller_name     = self.class.name.gsub(/Controller$/, '').underscore
-      method_name         = method_symbol.to_s
-      target_erb_filename = "#{controller_name}/#{method_name}.html.erb"
+      target_erb_filename = "#{@_current_base_dir}#{method_name}.html.erb"
       current_rendered    = _read_and_render_erb(@_views_root_path + target_erb_filename)
       provide(nil, current_rendered) # layout内で `yield` が呼ばれたときに返す値を登録する
       # layoutの描画を実行する
-      { type: :rendered, content: _render_layout_and_yield }
+      { type: :to_render, content: _render_layout_and_yield }
+    elsif @_method_result[:type] == :to_render
+      provide(nil, @_method_result[:content]) # layout内で `yield` が呼ばれたときに返す値を登録する
+      # layoutの描画を実行する
+      { type: :to_render, content: _render_layout_and_yield }
     else
-      @_render_state
+      @_method_result
     end
   end
 
@@ -168,18 +173,18 @@ class ActionController::Base
   end
 
   def render(target_name)
-    # ToDo: メソッドの実行結果として描画する場合
     if target_name.include? "/"
       _read_and_render_erb(File.dirname(target_name) + "/_" + File.basename(target_name) + ".html.erb")
     else
-      # ToDo: 実装
+      # conteroller内でrenderが呼ばれた場合
       # 同じディレクトリ内なのでファイル名から即参照できる
-      fail "見実装"
+      content         = _read_and_render_erb("#{@_views_root_path}#{@_current_base_dir}#{target_name.to_s}.html.erb")
+      @_method_result = { type: :to_render, content: content }
     end
   end
 
   def redirect_to(target)
-    @_render_state = { type: :to_redirect, target: :target }
+    @_method_result = { type: :to_redirect, target: target }
   end
 
   ### 描画要求・リダイレクト要求ここまで
