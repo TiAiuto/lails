@@ -197,11 +197,18 @@ class ActionController::Base
 
   def render(target_name)
     if target_name.include? "/"
+      ＃本当にこれでいいのか？
       _read_and_render_erb(File.dirname(target_name) + "/_" + File.basename(target_name) + ".html.erb")
     else
       # conteroller内でrenderが呼ばれた場合
       # 同じディレクトリ内なのでファイル名から即参照できる
-      content         = _read_and_render_erb("#{@_views_root_path}#{@_current_base_dir}#{target_name.to_s}.html.erb")
+      content         = if File.exist? "#{@_views_root_path}#{@_current_base_dir}#{target_name.to_s}.html.erb"
+                          # 通常のテンプレートの場合
+                          _read_and_render_erb("#{@_views_root_path}#{@_current_base_dir}#{target_name.to_s}.html.erb")
+                        else
+                          # 部分テンプレートの場合
+                          _read_and_render_erb("#{@_views_root_path}#{@_current_base_dir}_#{target_name.to_s}.html.erb")
+                        end
       @_method_result = { type: :to_render, content: content }
     end
   end
