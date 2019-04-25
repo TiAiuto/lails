@@ -21,10 +21,7 @@ require '../rails_tutorial/sample_app/config/routes'
 require 'webrick'
 require 'yaml'
 
-# Railsプロジェクトのルート
-APP_ROOT = '../rails_tutorial/sample_app/'
-# コンパイル済みのSCSSファイルのファイル名
-COMPILED_CSS_FILENAME = 'custom.scss.css'
+require '../lails/config'
 
 # Railsの中で help_path などのヘルパーを定義しているのでincludeしておく
 include Rails
