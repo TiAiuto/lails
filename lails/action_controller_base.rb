@@ -28,6 +28,9 @@ class FormBuilder
       @controller._erbout(name_symbol.to_s.capitalize)
     end
     @controller._erbout('</label>')
+
+    # @controller._erbout('</label>')
+    # name_symbol.to_s.capitalize # blockでない場
   end
 
   def _generate_name(name)
@@ -35,23 +38,23 @@ class FormBuilder
   end
 
   def text_field(name_symbol, options = {})
-    @controller._erbout(HTMLTagBuilder.build('input', options.merge({ type: 'text', name: _generate_name(name_symbol), id: _generate_name(name_symbol) })))
+    HTMLTagBuilder.build('input', options.merge({ type: 'text', name: _generate_name(name_symbol), id: _generate_name(name_symbol) }))
   end
 
   def email_field(name_symbol, options = {})
-    @controller._erbout(HTMLTagBuilder.build('input', options.merge({ type: 'email', name: _generate_name(name_symbol), id: _generate_name(name_symbol) })))
+    HTMLTagBuilder.build('input', options.merge({ type: 'email', name: _generate_name(name_symbol), id: _generate_name(name_symbol) }))
   end
 
   def password_field(name_symbol, options = {})
-    @controller._erbout(HTMLTagBuilder.build('input', options.merge({ type: 'password', name: _generate_name(name_symbol), id: _generate_name(name_symbol) })))
+    HTMLTagBuilder.build('input', options.merge({ type: 'password', name: _generate_name(name_symbol), id: _generate_name(name_symbol) }))
   end
 
   def check_box(name_symbol, options = {})
-    @controller._erbout(HTMLTagBuilder.build('input', options.merge({ type: 'checkbox', name: _generate_name(name_symbol), id: _generate_name(name_symbol) })))
+    HTMLTagBuilder.build('input', options.merge({ type: 'checkbox', name: _generate_name(name_symbol), id: _generate_name(name_symbol) }))
   end
 
   def submit(value, options = {}, &block)
-    @controller._erbout(HTMLTagBuilder.build('input', options.merge({ type: 'submit', value: value })))
+    HTMLTagBuilder.build('input', options.merge({ type: 'submit', value: value }))
   end
 end
 
@@ -215,6 +218,7 @@ class ActionController::Base
                           _read_and_render_erb("#{@_views_root_path}#{@_current_base_dir}_#{target_name.to_s}.html.erb")
                         end
       @_method_result = { type: :to_render, content: content }
+      content
     end
   end
 
