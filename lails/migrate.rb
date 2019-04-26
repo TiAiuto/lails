@@ -59,6 +59,7 @@ Dir.glob("#{APP_ROOT}db/migrate/*").sort.each do |filename|
     next
   end
   if can_process_migration
+    puts "#{filename} 処理中"
     classes_before = ActiveRecordMigration.subclasses.dup
     require filename
     next_class                       = (ActiveRecordMigration.subclasses - classes_before).first
