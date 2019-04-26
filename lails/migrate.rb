@@ -31,6 +31,7 @@ class ActiveRecordMigration
 
   def add_index(table_symbol, key_symbol, options)
     # なくても動くのでいったんpending
+    puts "add_indexはいったんむし"
   end
 end
 
