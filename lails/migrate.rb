@@ -28,6 +28,10 @@ class ActiveRecordMigration
   def add_column(table_symbol, key_symbol, type_symbol)
     @_def_service.add_column(table_symbol, key_symbol, type_symbol)
   end
+
+  def add_index(table_symbol, key_symbol, options)
+    # なくても動くのでいったんpending
+  end
 end
 
 class ActiveRecord::Migration
@@ -39,21 +43,30 @@ end
 can_process_migration = false
 if version_max.nil?
   can_process_migration = true
+  puts "マイグレーション初回実行"
+else
+  puts "#{version_max} までマイグレーション実行済み"
 end
 
 Dir.glob("#{APP_ROOT}db/migrate/*").sort.each do |filename|
-  if version_max && (filename.index version_max)
+  if version_max && !can_process_migration
+    puts "#{filename} skipped"
+  end
+  if version_max && filename.index(version_max.to_s)
     # 特定のバージョン以降のみを処理する場合
     # このファイルの次からは処理してOK
     can_process_migration = true
+    next
   end
-  puts filename
   if can_process_migration
     classes_before = ActiveRecordMigration.subclasses.dup
     require filename
-    next_class          = (ActiveRecordMigration.subclasses - classes_before).first
-    next_class_instance = next_class.new
+    next_class                       = (ActiveRecordMigration.subclasses - classes_before).first
+    next_class_instance              = next_class.new
     next_class_instance._def_service = def_service
     next_class_instance.change
+    current_migration_id = File.basename(filename).split("_")[0]
+    puts "#{current_migration_id} DONE"
+    db.execute("INSERT INTO schema_migrations (version) VALUES (?) ", current_migration_id)
   end
 end
