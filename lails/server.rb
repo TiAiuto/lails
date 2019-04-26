@@ -104,7 +104,7 @@ srv.mount_proc '/' do |req, res|
           if path.match /^\/assets\/css/
             puts 'CSSファイル送信'
             # リクエストされたCSSファイルを返す
-            File.open("compiled/#{path.gsub(/^\/assets\/css/, '')}", "r") do |file|
+            File.open("tmp/#{path.gsub(/^\/assets\/css/, '')}", "r") do |file|
               res.body = file.read
             end
           else

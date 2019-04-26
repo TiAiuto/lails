@@ -14,8 +14,8 @@ def compile(file)
     %Q{@import "#{path}/#{file}"},
     syntax: :scss, load_paths: ["#{BOOTSTRAP_SASS_ROOT}assets/stylesheets/"]
   )
-  FileUtils.mkdir_p("compiled/#{File.dirname(file)}")
-  File.open("compiled/#{file}.css", 'w') { |f|
+  FileUtils.mkdir_p("tmp/#{File.dirname(file)}")
+  File.open("tmp/#{file}.css", 'w') { |f|
     f.write engine.render
   }
 end
