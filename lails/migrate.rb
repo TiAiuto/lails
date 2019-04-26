@@ -13,7 +13,7 @@ unless def_service.table_exists? 'schema_migrations'
   ]
 end
 
-version_max = db.execute('SELECT MAX(version) FROM schema_migrations')[0][0] || 0
+version_max = db.execute('SELECT MAX(version) FROM schema_migrations')[0][0]
 
 module ActiveRecord
 end
@@ -27,8 +27,24 @@ class ActiveRecord::Migration
   end
 end
 
-Dir.glob("#{APP_ROOT}db/migrate/*").each do |filename|
-  require filename
+can_process_migration = false
+if version_max.nil?
+  can_process_migration = true
 end
 
-puts ActiveRecordMigration.subclasses
+Dir.glob("#{APP_ROOT}db/migrate/*").sort.each do |filename|
+  if version_max && (filename.index version_max)
+    # 特定のバージョン以降のみを処理する場合
+    # このファイルの次からは処理してOK
+    can_process_migration = true
+  end
+  puts filename
+  if can_process_migration
+    classes_before = ActiveRecordMigration.subclasses.dup
+    require filename
+    next_class = (ActiveRecordMigration.subclasses - classes_before).first
+    # next_class.new.change do
+    #
+    # end
+  end
+end
