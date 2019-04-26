@@ -11,3 +11,5 @@ BOOTSTRAP_SASS_ROOT = '/Users/ayuto.takasaki/.rbenv/versions/2.5.1/lib/ruby/gems
 
 # アプリケーション固有のSCSSのファイル名（アセットパイプラインの処理は再現しないため、 `application.css` は無視する）
 SCSS_FILENAME = 'custom.scss'
+
+SQLITE_FILENAME = 'sqlite.db'
