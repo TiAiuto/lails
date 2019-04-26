@@ -19,6 +19,13 @@ class String
   end
 end
 
+# もらいもの
+class Class
+  def subclasses
+    ObjectSpace.each_object(Class).select{|klass| klass.superclass == self}
+  end
+end
+
 class Object
   def empty?
     self == ''
